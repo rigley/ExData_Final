@@ -11,22 +11,20 @@ myColors <- brewer.pal(4, "Set1")
 
 
 # get coal codes
-small_scc <- select(SCC, SCC, EI.Sector)
 sectors <- unique(SCC$EI.Sector)
-coal_sectors_indx <- grep("*Coal *", sectors)
-coal_sectors <- sectors[coal_sectors_indx]
-coal_codes <- SCC %>% filter(EI.Sector %in% coal_sectors) %>% select(SCC)
-coal_emissions <- filter(NEI, SCC %in% coal_codes$SCC)
-coal_emissions <- coal_emissions %>% left_join(small_scc, by = c("SCC"))
+mobile_sectors_indx <- grep("*Mobile - On-Road *", sectors)
+mobile_sectors <- sectors[mobile_sectors_indx]
+mobile_codes <- SCC %>% filter(EI.Sector %in% mobile_sectors) %>% select(SCC)
+mobile_emissions <- filter(NEI, SCC %in% mobile_codes$SCC)
 
-tmp <- aggregate(coal_emissions$Emissions, 
-                 by = list(year = coal_emissions$year, type = coal_emissions$type),
+tmp <- aggregate(mobile_emissions$Emissions, 
+                 by = list(year = mobile_emissions$year, type = mobile_emissions$type),
                  FUN = sum)
 
 
 
 #make chart
-png(filename = "./plot4.png", width=480, height=480, units="px")
+png(filename = "./plot5.png", width=480, height=480, units="px")
 
 axis_labels <- c(0, 150000, 300000, 450000, 600000)
 axis_lable_names <- c("0", "150,000", "300,000", "450,000", "600,000")
@@ -36,13 +34,13 @@ g <- ggplot(tmp, aes(year, x, group = type, color = type))
 print(
      g + geom_point(size = 2) + 
           geom_line() + 
-          labs(title = "PM2.5 Coal Emissions per Year by Source") + 
+          labs(title = "PM2.5 Motor Vehicle Emissions per Year") + 
           labs(x = "Year") + 
-          labs(y = "PM2.5 Coal Emissions (tons)") +
+          labs(y = "PM2.5 Motor Vehicle Emissions (tons)") +
           theme(plot.title = element_text(hjust = 0.5))  +
           scale_x_continuous(breaks = c(1999, 2002, 2005, 2008)) + 
           scale_y_continuous(limits = c(0, 600000), breaks = axis_labels, labels = axis_lable_names)
 )
 
 dev.off()
-print("Output saved at plot4.png")
+print("Output saved at plot5.png")
