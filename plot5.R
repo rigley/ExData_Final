@@ -11,14 +11,16 @@ myColors <- brewer.pal(4, "Set1")
 
 
 # get coal codes
+small_scc <- select(SCC, SCC, EI.Sector)
 sectors <- unique(SCC$EI.Sector)
 mobile_sectors_indx <- grep("*Mobile - On-Road *", sectors)
 mobile_sectors <- sectors[mobile_sectors_indx]
 mobile_codes <- SCC %>% filter(EI.Sector %in% mobile_sectors) %>% select(SCC)
 mobile_emissions <- filter(NEI, SCC %in% mobile_codes$SCC)
+mobile_emissions <- mobile_emissions %>% left_join(small_scc, by = c("SCC"))
 
 tmp <- aggregate(mobile_emissions$Emissions, 
-                 by = list(year = mobile_emissions$year, type = mobile_emissions$type),
+                 by = list(year = mobile_emissions$year, Source = mobile_emissions$EI.Sector),
                  FUN = sum)
 
 
@@ -26,9 +28,11 @@ tmp <- aggregate(mobile_emissions$Emissions,
 #make chart
 png(filename = "./plot5.png", width=480, height=480, units="px")
 
-axis_labels <- c(0, 150000, 300000, 450000, 600000)
-axis_lable_names <- c("0", "150,000", "300,000", "450,000", "600,000")
-g <- ggplot(tmp, aes(year, x, group = type, color = type))
+
+axis_labels <- pretty(1:150000, 7)
+axis_lable_names <- pretty(1:150000, 7)
+
+g <- ggplot(tmp, aes(year, x, group = Source, color = Source))
 
 
 print(
@@ -38,8 +42,9 @@ print(
           labs(x = "Year") + 
           labs(y = "PM2.5 Motor Vehicle Emissions (tons)") +
           theme(plot.title = element_text(hjust = 0.5))  +
+          theme(legend.position = "bottom", legend.direction = "vertical") + 
           scale_x_continuous(breaks = c(1999, 2002, 2005, 2008)) + 
-          scale_y_continuous(limits = c(0, 600000), breaks = axis_labels, labels = axis_lable_names)
+          scale_y_continuous(limits = c(0, 175000), breaks = axis_labels, labels = scales::comma)
 )
 
 dev.off()

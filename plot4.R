@@ -19,8 +19,9 @@ coal_codes <- SCC %>% filter(EI.Sector %in% coal_sectors) %>% select(SCC)
 coal_emissions <- filter(NEI, SCC %in% coal_codes$SCC)
 coal_emissions <- coal_emissions %>% left_join(small_scc, by = c("SCC"))
 
+
 tmp <- aggregate(coal_emissions$Emissions, 
-                 by = list(year = coal_emissions$year, type = coal_emissions$type),
+                 by = list(year = coal_emissions$year, Source = coal_emissions$EI.Sector),
                  FUN = sum)
 
 
@@ -30,7 +31,7 @@ png(filename = "./plot4.png", width=480, height=480, units="px")
 
 axis_labels <- c(0, 150000, 300000, 450000, 600000)
 axis_lable_names <- c("0", "150,000", "300,000", "450,000", "600,000")
-g <- ggplot(tmp, aes(year, x, group = type, color = type))
+g <- ggplot(tmp, aes(year, x, group = Source, color = Source))
 
 
 print(
@@ -40,6 +41,7 @@ print(
           labs(x = "Year") + 
           labs(y = "PM2.5 Coal Emissions (tons)") +
           theme(plot.title = element_text(hjust = 0.5))  +
+          theme(legend.position = "bottom", legend.direction = "vertical") + 
           scale_x_continuous(breaks = c(1999, 2002, 2005, 2008)) + 
           scale_y_continuous(limits = c(0, 600000), breaks = axis_labels, labels = axis_lable_names)
 )
